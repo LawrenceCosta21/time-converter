@@ -44,7 +44,7 @@ vercel --prod
 1. Push this folder to a GitHub repo
 2. Go to **Settings → Pages**
 3. Set source to `main` branch, `/ (root)`
-4. Your site will be live at `https://<username>.github.io/<repo>`
+4. Your site will be live at `https://<username>.github.io/<repo>` // Site is live at : https://lawrencecosta21.github.io/time-converter
 
 ### Cloudflare Pages
 1. Push to GitHub
