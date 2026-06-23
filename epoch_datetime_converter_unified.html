@@ -1,0 +1,239 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box}
+.wrap{padding:0 0 1rem}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--color-border-tertiary);margin-bottom:1.5rem}
+.tab{padding:10px 22px;font-size:14px;font-weight:400;color:var(--color-text-secondary);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab.active{color:var(--color-text-primary);font-weight:500;border-bottom-color:var(--color-text-primary)}
+.tab:hover:not(.active){color:var(--color-text-primary)}
+.panel{display:none}.panel.active{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field label{font-size:13px;color:var(--color-text-secondary)}
+.field input,.field select{width:100%}
+.tog-row{display:flex;gap:8px;margin-bottom:4px}
+.tog{padding:5px 14px;font-size:13px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary)}
+.tog.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.result{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem 1.25rem;margin-top:1.25rem}
+.res-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:3px;margin-top:10px}
+.res-label:first-child{margin-top:0}
+.res-val{font-size:18px;font-weight:500;font-family:var(--font-mono);color:var(--color-text-primary)}
+.res-sm{font-size:13px;font-family:var(--font-mono);color:var(--color-text-primary)}
+.res-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.copy-btn{font-size:12px;padding:3px 9px;border-radius:var(--border-radius-md);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.copy-btn.copied{color:var(--color-text-success);border-color:var(--color-border-success)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+.mini-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px}
+.mini-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.mini-val{font-size:13px;font-weight:500;font-family:var(--font-mono);color:var(--color-text-primary)}
+.tz-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.tz-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px}
+.tz-name{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.tz-val{font-size:13px;font-weight:500;font-family:var(--font-mono);color:var(--color-text-primary)}
+.err{font-size:13px;color:var(--color-text-danger);min-height:18px;margin-top:4px}
+</style>
+
+<h2 class="sr-only">Unified epoch and datetime converter with two tabs: convert datetime to epoch, or epoch to datetime.</h2>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dt2ep')"><i class="ti ti-clock-down" aria-hidden="true" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Date → Epoch</button>
+    <button class="tab" onclick="switchTab('ep2dt')"><i class="ti ti-clock-up" aria-hidden="true" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>Epoch → Date</button>
+  </div>
+
+  <!-- PANEL 1: DateTime → Epoch -->
+  <div class="panel active" id="panel-dt2ep">
+    <div class="row2">
+      <div class="field">
+        <label for="p1-date">Date</label>
+        <input type="date" id="p1-date" />
+      </div>
+      <div class="field">
+        <label for="p1-time">Time</label>
+        <input type="time" id="p1-time" step="1" />
+      </div>
+    </div>
+    <div class="field">
+      <label for="p1-tz">Timezone</label>
+      <select id="p1-tz"></select>
+    </div>
+    <div class="err" id="p1-err"></div>
+
+    <div id="p1-result" style="display:none">
+      <div class="result">
+        <div class="res-label">Epoch (seconds)</div>
+        <div class="res-row">
+          <span class="res-val" id="p1-s">—</span>
+          <button class="copy-btn" id="p1-cs" onclick="cp('p1-s','p1-cs')"><i class="ti ti-copy" aria-hidden="true"></i> Copy</button>
+        </div>
+        <div class="res-label" style="margin-top:12px">Epoch (milliseconds)</div>
+        <div class="res-row">
+          <span class="res-val" id="p1-ms">—</span>
+          <button class="copy-btn" id="p1-cms" onclick="cp('p1-ms','p1-cms')"><i class="ti ti-copy" aria-hidden="true"></i> Copy</button>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--color-text-tertiary)" id="p1-utc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: Epoch → DateTime -->
+  <div class="panel" id="panel-ep2dt">
+    <div class="field">
+      <label>Epoch unit</label>
+      <div class="tog-row">
+        <button class="tog active" id="tog-s" onclick="setUnit('s')">Seconds</button>
+        <button class="tog" id="tog-ms" onclick="setUnit('ms')">Milliseconds</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="p2-epoch">Epoch value</label>
+      <input type="number" id="p2-epoch" placeholder="e.g. 1750000000" style="font-family:var(--font-mono)" />
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label for="p2-tz">Additional timezone</label>
+      <select id="p2-tz"></select>
+    </div>
+    <div class="err" id="p2-err"></div>
+
+    <div id="p2-result" style="display:none">
+      <div class="result">
+        <div class="res-label">UTC</div>
+        <div class="res-row">
+          <span class="res-val" id="p2-utc" style="font-size:15px">—</span>
+          <button class="copy-btn" id="p2-cu" onclick="cp('p2-utc','p2-cu')"><i class="ti ti-copy" aria-hidden="true"></i> Copy</button>
+        </div>
+        <div class="res-label" style="margin-top:10px">ISO 8601</div>
+        <div class="res-sm" id="p2-iso">—</div>
+
+        <div class="tz-grid">
+          <div class="tz-card">
+            <div class="tz-name" id="p2-local-name">Local</div>
+            <div class="tz-val" id="p2-local">—</div>
+          </div>
+          <div class="tz-card">
+            <div class="tz-name" id="p2-custom-name">—</div>
+            <div class="tz-val" id="p2-custom">—</div>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="mini-card"><div class="mini-label">Day of week</div><div class="mini-val" id="p2-dow">—</div></div>
+          <div class="mini-card"><div class="mini-label">Day of year</div><div class="mini-val" id="p2-doy">—</div></div>
+          <div class="mini-card"><div class="mini-label">Week no.</div><div class="mini-val" id="p2-wk">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let epUnit = 's';
+
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['dt2ep','ep2dt'][i]===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+function populateTz(selId){
+  const sel = document.getElementById(selId);
+  const zones = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [
+    'UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles',
+    'America/Sao_Paulo','Europe/London','Europe/Paris','Europe/Berlin','Europe/Moscow',
+    'Asia/Dubai','Asia/Kolkata','Asia/Dhaka','Asia/Bangkok','Asia/Singapore',
+    'Asia/Tokyo','Asia/Shanghai','Australia/Sydney','Pacific/Auckland'
+  ];
+  zones.forEach(z=>{const o=document.createElement('option');o.value=z;o.textContent=z;sel.appendChild(o);});
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if(zones.includes(tz)) sel.value=tz;
+}
+populateTz('p1-tz'); populateTz('p2-tz');
+
+const now = new Date();
+document.getElementById('p1-date').value = now.toLocaleDateString('en-CA');
+document.getElementById('p1-time').value = now.toTimeString().slice(0,8);
+document.getElementById('p2-epoch').value = Math.floor(Date.now()/1000);
+
+function p1convert(){
+  const d=document.getElementById('p1-date').value;
+  const t=document.getElementById('p1-time').value||'00:00:00';
+  const tz=document.getElementById('p1-tz').value;
+  const err=document.getElementById('p1-err');
+  const box=document.getElementById('p1-result');
+  if(!d){err.textContent='Please enter a date.';box.style.display='none';return;}
+  err.textContent='';
+  try{
+    const isoStr=d+'T'+t;
+    const fmt=new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    const ref=new Date(isoStr+'Z');
+    const utcMs=ref.getTime();
+    const lp={};
+    fmt.formatToParts(ref).forEach(p=>lp[p.type]=p.value);
+    const localTs=Date.UTC(+lp.year,+lp.month-1,+lp.day,+lp.hour,+lp.minute,+lp.second);
+    const offset=utcMs-localTs;
+    const [yr,mo,dy]=d.split('-').map(Number);
+    const [hh,mm,ss=0]=t.split(':').map(Number);
+    const epochMs=Date.UTC(yr,mo-1,dy,hh,mm,ss)+offset;
+    const epochS=Math.floor(epochMs/1000);
+    document.getElementById('p1-s').textContent=epochS;
+    document.getElementById('p1-ms').textContent=epochMs;
+    document.getElementById('p1-utc').textContent='UTC: '+new Date(epochMs).toISOString().replace('T',' ').replace('Z',' Z');
+    box.style.display='block';
+  }catch(e){err.textContent='Could not convert. Check your inputs.';box.style.display='none';}
+}
+
+function fmtTz(ms,tz){
+  return new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(ms)).replace(',','');
+}
+function getDOY(d){return Math.floor((d-new Date(Date.UTC(d.getUTCFullYear(),0,0)))/86400000);}
+function getWeek(d){const x=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));return Math.ceil((((x-new Date(Date.UTC(x.getUTCFullYear(),0,1)))/86400000)+1)/7);}
+
+function p2convert(){
+  const raw=document.getElementById('p2-epoch').value.trim();
+  const err=document.getElementById('p2-err');
+  const box=document.getElementById('p2-result');
+  if(!raw){err.textContent='';box.style.display='none';return;}
+  const num=Number(raw);
+  if(isNaN(num)){err.textContent='Please enter a valid number.';box.style.display='none';return;}
+  err.textContent='';
+  const ms=epUnit==='s'?num*1000:num;
+  const date=new Date(ms);
+  if(isNaN(date.getTime())){err.textContent='Timestamp out of range.';box.style.display='none';return;}
+  document.getElementById('p2-utc').textContent=fmtTz(ms,'UTC');
+  document.getElementById('p2-iso').textContent=date.toISOString();
+  const localTz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  document.getElementById('p2-local-name').textContent=localTz;
+  document.getElementById('p2-local').textContent=fmtTz(ms,localTz);
+  const ctz=document.getElementById('p2-tz').value;
+  document.getElementById('p2-custom-name').textContent=ctz;
+  document.getElementById('p2-custom').textContent=fmtTz(ms,ctz);
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  document.getElementById('p2-dow').textContent=days[date.getUTCDay()];
+  document.getElementById('p2-doy').textContent=getDOY(date);
+  document.getElementById('p2-wk').textContent='W'+String(getWeek(date)).padStart(2,'0');
+  box.style.display='block';
+}
+
+function setUnit(u){
+  epUnit=u;
+  document.getElementById('tog-s').classList.toggle('active',u==='s');
+  document.getElementById('tog-ms').classList.toggle('active',u==='ms');
+  const val=+document.getElementById('p2-epoch').value;
+  if(!isNaN(val)&&val) document.getElementById('p2-epoch').value=u==='ms'?val*1000:Math.floor(val/1000);
+  p2convert();
+}
+
+function cp(valId,btnId){
+  const val=document.getElementById(valId).textContent;
+  navigator.clipboard.writeText(val).then(()=>{
+    const btn=document.getElementById(btnId);
+    btn.innerHTML='✓ Copied';btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML='<i class="ti ti-copy" aria-hidden="true"></i> Copy';btn.classList.remove('copied');},2000);
+  });
+}
+
+['p1-date','p1-time','p1-tz'].forEach(id=>document.getElementById(id).addEventListener('input',p1convert));
+['p2-epoch','p2-tz'].forEach(id=>document.getElementById(id).addEventListener('input',p2convert));
+p1convert(); p2convert();
+</script>
