@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epoch Converter — Unix Timestamp Tool</title>
+  <meta name="description" content="Convert between Unix epoch timestamps and human-readable dates across any timezone. Free, fast, no ads." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="11" cy="11" r="9.5" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="11" y1="5" x2="11" y2="11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="11" y1="11.5" x2="15" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="11" cy="11.5" r="1" fill="currentColor"/>
+        </svg>
+        <span>epoch<strong>converter</strong></span>
+      </div>
+      <div class="now-strip" id="now-strip">—</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Unix Timestamp Converter</h1>
+      <p class="hero-sub">Convert between epoch timestamps and human-readable dates across any timezone — instantly.</p>
+    </section>
+
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button class="tab active" role="tab" aria-selected="true" aria-controls="panel-dt2ep" id="tab-dt2ep" onclick="switchTab('dt2ep')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><line x1="12" y1="22" x2="12" y2="18"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/></svg>
+          Date → Epoch
+        </button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-ep2dt" id="tab-ep2dt" onclick="switchTab('ep2dt')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="19.78" y1="4.22" x2="16.95" y2="7.05"/></svg>
+          Epoch → Date
+        </button>
+      </div>
+
+      <!-- Panel 1: DateTime → Epoch -->
+      <div class="panel active" id="panel-dt2ep" role="tabpanel" aria-labelledby="tab-dt2ep">
+        <div class="row2">
+          <div class="field">
+            <label for="p1-date">Date</label>
+            <input type="date" id="p1-date" />
+          </div>
+          <div class="field">
+            <label for="p1-time">Time</label>
+            <input type="time" id="p1-time" step="1" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="p1-tz">Timezone</label>
+          <select id="p1-tz"></select>
+        </div>
+        <p class="err" id="p1-err" role="alert" aria-live="polite"></p>
+
+        <div class="result-block" id="p1-result" hidden>
+          <div class="result-row">
+            <div>
+              <div class="result-label">Epoch — seconds</div>
+              <div class="result-val mono" id="p1-s">—</div>
+            </div>
+            <button class="copy-btn" id="p1-cs" onclick="cp('p1-s','p1-cs')" aria-label="Copy epoch seconds">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="divider"></div>
+          <div class="result-row">
+            <div>
+              <div class="result-label">Epoch — milliseconds</div>
+              <div class="result-val mono" id="p1-ms">—</div>
+            </div>
+            <button class="copy-btn" id="p1-cms" onclick="cp('p1-ms','p1-cms')" aria-label="Copy epoch milliseconds">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="utc-note" id="p1-utc"></div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Epoch → DateTime -->
+      <div class="panel" id="panel-ep2dt" role="tabpanel" aria-labelledby="tab-ep2dt" hidden>
+        <div class="field">
+          <label>Epoch unit</label>
+          <div class="toggle-row" role="group" aria-label="Epoch unit">
+            <button class="tog active" id="tog-s" onclick="setUnit('s')">Seconds</button>
+            <button class="tog" id="tog-ms" onclick="setUnit('ms')">Milliseconds</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="p2-epoch">Epoch value</label>
+          <input type="number" id="p2-epoch" placeholder="e.g. 1750000000" class="mono" />
+        </div>
+        <div class="field">
+          <label for="p2-tz">Additional timezone</label>
+          <select id="p2-tz"></select>
+        </div>
+        <p class="err" id="p2-err" role="alert" aria-live="polite"></p>
+
+        <div class="result-block" id="p2-result" hidden>
+          <div class="result-row">
+            <div>
+              <div class="result-label">UTC</div>
+              <div class="result-val mono" id="p2-utc">—</div>
+            </div>
+            <button class="copy-btn" id="p2-cu" onclick="cp('p2-utc','p2-cu')" aria-label="Copy UTC time">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <div class="divider"></div>
+          <div class="result-label" style="margin-bottom:4px">ISO 8601</div>
+          <div class="mono result-sm" id="p2-iso">—</div>
+
+          <div class="tz-grid">
+            <div class="tz-card">
+              <div class="tz-name" id="p2-local-name">Local</div>
+              <div class="mono tz-val" id="p2-local">—</div>
+            </div>
+            <div class="tz-card">
+              <div class="tz-name" id="p2-custom-name">—</div>
+              <div class="mono tz-val" id="p2-custom">—</div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-card">
+              <div class="meta-label">Day of week</div>
+              <div class="meta-val" id="p2-dow">—</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">Day of year</div>
+              <div class="meta-val" id="p2-doy">—</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">Week no.</div>
+              <div class="meta-val" id="p2-wk">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="info-grid">
+      <div class="info-card">
+        <h2>What is Unix time?</h2>
+        <p>Unix time (epoch time) counts the number of seconds that have elapsed since <strong>January 1, 1970 00:00:00 UTC</strong> — also known as the Unix epoch. It's the universal language of timestamps in software.</p>
+      </div>
+      <div class="info-card">
+        <h2>Seconds vs milliseconds</h2>
+        <p>Most Unix systems use <strong>seconds</strong> (10-digit numbers like <code>1750000000</code>). JavaScript and many modern APIs use <strong>milliseconds</strong> (13-digit numbers like <code>1750000000000</code>).</p>
+      </div>
+      <div class="info-card">
+        <h2>Year 2038 problem</h2>
+        <p>32-bit systems storing Unix time as a signed integer will overflow on <strong>January 19, 2038</strong>. Modern 64-bit systems can represent dates hundreds of billions of years into the future.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built with vanilla JS — no tracking, no ads, no cookies.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
